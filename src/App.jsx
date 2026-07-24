@@ -43,7 +43,7 @@ export default function App() {
   const isMinimalLayout = ['splash', 'payment', 'order-success', 'auth'].includes(currentPage);
 
   return (
-    <div className="flex flex-col min-h-screen bg-luxury-light text-luxury-dark select-none md:select-text pb-12 md:pb-0">
+    <div className="flex flex-col min-h-screen bg-background text-text select-none md:select-text pb-12 md:pb-0 transition-colors duration-300">
       
       {/* Header Sticky Navigation (Hidden on Splash) */}
       {!isSplash && (

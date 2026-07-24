@@ -3,12 +3,13 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard/ProductCard';
-import { ShoppingCart, Flame, Star, Sparkles, Clock, ArrowRight } from 'lucide-react';
+import { ProductSkeleton } from '@/components/Skeleton';
+import { ShoppingCart, Flame, Star, Sparkles, Clock, ArrowRight, PackageOpen } from 'lucide-react';
 
 export default function Home({ onNavigate }) {
   const { language, t } = useLanguage();
   const { cartItems, getSubtotal } = useCart();
-  const { products } = useApp();
+  const { products, dataLoading } = useApp();
   const [activeCategory, setActiveCategory] = useState('All');
 
   // Categories list
@@ -71,6 +72,43 @@ export default function Home({ onNavigate }) {
         </div>
       </div>
 
+      {/* Featured / Trending Section */}
+      <section className="text-left">
+        <div className="flex justify-between items-baseline mb-4">
+          <div className="flex items-center space-x-2">
+            <Flame className="w-5 h-5 text-accent animate-pulse" />
+            <h3 className="text-base font-extrabold text-primary font-sans">{t('trendingTitle')}</h3>
+          </div>
+          <button onClick={() => onNavigate('categories')} className="text-xs font-bold text-accent hover:underline flex items-center space-x-1">
+            <span>{t('viewAll')}</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+        
+        {dataLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <ProductSkeleton />
+            <ProductSkeleton />
+            <ProductSkeleton />
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProducts.slice(0, 6).map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onClick={() => onNavigate('product', product)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="glass-card p-8 rounded-3xl flex flex-col items-center justify-center text-center space-y-3">
+            <PackageOpen className="w-10 h-10 text-muted/50" />
+            <p className="text-sm font-bold text-muted">No products found in this category.</p>
+          </div>
+        )}
+      </section>
+
       {/* Categories Row */}
       <section className="text-left">
         <div className="flex justify-between items-baseline mb-4">
@@ -107,8 +145,15 @@ export default function Home({ onNavigate }) {
               : activeCategory}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+            {dataLoading ? (
+              <>
+                <ProductSkeleton />
+                <ProductSkeleton />
+                <ProductSkeleton />
+                <ProductSkeleton />
+              </>
+            ) : filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} onClick={() => onNavigate('product', product)} />
             ))}
           </div>
         </section>
@@ -124,8 +169,14 @@ export default function Home({ onNavigate }) {
               <h3 className="text-base font-extrabold text-primary font-sans">{t('featuredProducts')}</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {featured.map(product => (
-                <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+              {dataLoading ? (
+                <>
+                  <ProductSkeleton />
+                  <ProductSkeleton />
+                  <ProductSkeleton />
+                </>
+              ) : featured.map(product => (
+                <ProductCard key={product.id} product={product} onClick={() => onNavigate('product', product)} />
               ))}
             </div>
           </section>
@@ -137,8 +188,14 @@ export default function Home({ onNavigate }) {
               <h3 className="text-base font-extrabold text-primary font-sans">{t('bestSellers')}</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {bestSellers.map(product => (
-                <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+              {dataLoading ? (
+                <>
+                  <ProductSkeleton />
+                  <ProductSkeleton />
+                  <ProductSkeleton />
+                </>
+              ) : bestSellers.map(product => (
+                <ProductCard key={product.id} product={product} onClick={() => onNavigate('product', product)} />
               ))}
             </div>
           </section>
