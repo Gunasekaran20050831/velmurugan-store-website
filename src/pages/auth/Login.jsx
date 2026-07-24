@@ -10,6 +10,7 @@ export default function Auth({ onNavigate }) {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form Fields
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -23,19 +24,26 @@ export default function Auth({ onNavigate }) {
   const [otpCodes, setOtpCodes] = useState(['', '', '', '']);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!emailOrPhone || !password) {
       setErrorMsg("Please fill in all fields.");
       return;
     }
-    const res = login(emailOrPhone, password);
+    
+    setIsLoading(true);
+    setErrorMsg('');
+    const res = await login(emailOrPhone, password);
+    setIsLoading(false);
+    
     if (res.success) {
       if (res.user.isAdmin) {
         onNavigate('admin');
       } else {
         onNavigate('home');
       }
+    } else {
+      setErrorMsg(res.message || "Invalid credentials.");
     }
   };
 
@@ -64,16 +72,23 @@ export default function Auth({ onNavigate }) {
     }
   };
 
-  const handleOtpSubmit = () => {
+  const handleOtpSubmit = async () => {
     const code = otpCodes.join('');
     if (code.length < 4) {
       setErrorMsg("Please enter 4 digits.");
       return;
     }
-    const res = signup(fullName, phone, email, password);
+    
+    setIsLoading(true);
+    setErrorMsg('');
+    const res = await signup(fullName, phone, email, password);
+    setIsLoading(false);
+    
     if (res.success) {
       setShowOtpModal(false);
       onNavigate('home');
+    } else {
+      setErrorMsg(res.message || "Signup failed.");
     }
   };
 

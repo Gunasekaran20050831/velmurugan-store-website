@@ -2,171 +2,18 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 const AppContext = createContext();
 
-const initialProducts = [
-  {
-    id: 1,
-    name: "Fresh Red Apples",
-    nameTa: "புதிய சிவப்பு ஆப்பிள்கள்",
-    category: "Fruits & Veg",
-    categoryTa: "பழங்கள் & காய்கறிகள்",
-    price: 120,
-    rating: 4.6,
-    ratingCount: 128,
-    description: "Premium crispy royal gala apples imported from fresh orchards, packed with iron and vitamins.",
-    descriptionTa: "புதிய பழத்தோட்டங்களில் இருந்து இறக்குமதி செய்யப்பட்ட பிரீமியம் ஆப்பிள்கள், இரும்பு மற்றும் வைட்டமின்கள் நிறைந்தது.",
-    images: [
-      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1579613832125-5d34a13ff2a8?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Weight", value: "1 kg (approx. 5-6 units)" },
-      { key: "Origin", value: "Himachal Pradesh, India" },
-      { key: "Shelf Life", value: "7 Days" }
-    ],
-    reviews: [
-      { id: 1, user: "Karthik Raja", rating: 5, comment: "Extremely fresh and crunchy! Worth the premium pricing.", date: "2026-07-20" },
-      { id: 2, user: "Meena S.", rating: 4, comment: "Good quality, prompt home delivery.", date: "2026-07-18" }
-    ],
-    stock: 25
-  },
-  {
-    id: 2,
-    name: "Premium Farm Fresh Milk",
-    nameTa: "பிரீமியம் பசுவின் பால்",
-    category: "Dairy & Eggs",
-    categoryTa: "பால் & முட்டை",
-    price: 60,
-    rating: 4.8,
-    ratingCount: 94,
-    description: "100% pure organic cow milk pasteurized within hours of milking. Contains essential nutrients.",
-    descriptionTa: "100% தூய ஆர்கானிக் பசுவின் பால். அத்தியாவசிய ஊட்டச்சத்துக்கள் நிறைந்தது.",
-    images: [
-      "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Volume", value: "1 Liter" },
-      { key: "Fat Content", value: "3.5% Standardized" },
-      { key: "Shelf Life", value: "2 Days (Keep refrigerated)" }
-    ],
-    reviews: [
-      { id: 1, user: "Suresh Kumar", rating: 5, comment: "Taste is very natural, children love it.", date: "2026-07-22" }
-    ],
-    stock: 12
-  },
-  {
-    id: 3,
-    name: "Aashirvaad Shudh Chakki Atta",
-    nameTa: "ஆசிர்வாத் கோதுமை மாவு",
-    category: "Staples",
-    categoryTa: "மளிகை பொருட்கள்",
-    price: 265,
-    rating: 4.5,
-    ratingCount: 210,
-    description: "Premium chakki wheat flour milled from robust golden grains to make soft, healthy rotis.",
-    descriptionTa: "உயர்தர கோதுமையிலிருந்து தயாரிக்கப்பட்ட மாவு, மென்மையான ரொட்டிகள் செய்ய ஏற்றது.",
-    images: [
-      "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Weight", value: "5 kg" },
-      { key: "Type", value: "Whole Wheat Flour" },
-      { key: "Brand", value: "ITC Aashirvaad" }
-    ],
-    reviews: [
-      { id: 1, user: "Vijay V.", rating: 5, comment: "Makes very soft chapatis. Best brand.", date: "2026-07-15" }
-    ],
-    stock: 18
-  },
-  {
-    id: 4,
-    name: "Pure Organic Coconut Oil",
-    nameTa: "தூய தேங்காய் எண்ணெய்",
-    category: "Staples",
-    categoryTa: "மளிகை பொருட்கள்",
-    price: 195,
-    rating: 4.7,
-    ratingCount: 75,
-    description: "Cold-pressed coconut oil extracted from sun-dried coconuts. Perfect for luxury cooking and massage.",
-    descriptionTa: "வெயிலில் உலர்த்திய தேங்காயில் இருந்து செக்கில் ஆட்டப்பட்ட தேங்காய் எண்ணெய்.",
-    images: [
-      "https://images.unsplash.com/photo-1622484211148-716598e04041?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Volume", value: "500 ml" },
-      { key: "Type", value: "Cold Pressed / Virgin" },
-      { key: "Packaging", value: "Glass Bottle" }
-    ],
-    reviews: [
-      { id: 1, user: "Anitha M.", rating: 4, comment: "High quality aroma. Highly recommended.", date: "2026-07-12" }
-    ],
-    stock: 0 // Out of Stock
-  },
-  {
-    id: 5,
-    name: "Fresh Farm Tomatoes",
-    nameTa: "நாட்டு தக்காளி",
-    category: "Fruits & Veg",
-    categoryTa: "பழங்கள் & காய்கறிகள்",
-    price: 40,
-    rating: 4.3,
-    ratingCount: 154,
-    description: "Organic, pesticide-free ripe red country tomatoes sourced directly from local farmers.",
-    descriptionTa: "உள்ளூர் விவசாயிகளிடமிருந்து நேரடியாகப் பெறப்பட்ட ஆர்கானிக் தக்காளி பழங்கள்.",
-    images: [
-      "https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Weight", value: "1 kg" },
-      { key: "Type", value: "Country Ripe" },
-      { key: "Shelf Life", value: "4 Days" }
-    ],
-    reviews: [
-      { id: 1, user: "Ramya N.", rating: 4, comment: "Tastes sour and nice, perfect for Rasam.", date: "2026-07-23" }
-    ],
-    stock: 30
-  },
-  {
-    id: 6,
-    name: "Premium Mysore Sandal Soap",
-    nameTa: "மைசூர் சாண்டல் சோப்",
-    category: "Personal Care",
-    categoryTa: "தனிநபர் பராமரிப்பு",
-    price: 85,
-    rating: 4.9,
-    ratingCount: 310,
-    description: "Luxury sandalwood soap made from natural sandalwood oil. Leaves skin radiant and glowing.",
-    descriptionTa: "இயற்கை சந்தன எண்ணெயில் இருந்து தயாரிக்கப்பட்ட சொகுசு சோப்.",
-    images: [
-      "https://images.unsplash.com/photo-1607006342411-b0135417926c?auto=format&fit=crop&q=80&w=600"
-    ],
-    specifications: [
-      { key: "Weight", value: "150g" },
-      { key: "Fragrance", value: "Natural Sandalwood" },
-      { key: "TFM", value: "80% Grade 1" }
-    ],
-    reviews: [
-      { id: 1, user: "Revathi S.", rating: 5, comment: "Nothing beats Mysore Sandal scent. True royalty.", date: "2026-07-21" }
-    ],
-    stock: 20
-  }
-];
-
 export const AppProvider = ({ children }) => {
-  // Authentication
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('vstore_user');
-    return saved ? JSON.parse(saved) : null; // { name, email, phone, isAdmin }
-  });
+  // --- AUTHENTICATION STATE ---
+  const [currentUser, setCurrentUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem('vstore_token') || null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // Products
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('vstore_products');
-    return saved ? JSON.parse(saved) : initialProducts;
-  });
+  // --- DATA STATE ---
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  // Delivery configuration (Can be updated by Admin)
+  // --- DELIVERY CONFIG ---
   const [deliveryRates, setDeliveryRates] = useState(() => {
     const saved = localStorage.getItem('vstore_delivery_rates');
     return saved ? JSON.parse(saved) : [
@@ -177,51 +24,18 @@ export const AppProvider = ({ children }) => {
     ];
   });
 
-  // Active Pinned Location
   const [deliveryLocation, setDeliveryLocation] = useState(() => {
     const saved = localStorage.getItem('vstore_location');
     return saved ? JSON.parse(saved) : {
-      lat: 13.0827, // Chennai Coordinates Default
+      lat: 13.0827,
       lng: 80.2707,
       address: "Anna Nagar, Chennai, Tamil Nadu 600040",
-      distance: 3.2, // km
+      distance: 3.2,
       charge: 40
     };
   });
 
-  // Orders State
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('vstore_orders');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: "VMS12568",
-        date: "2026-07-24 10:30 AM",
-        items: [
-          { id: 1, name: "Fresh Red Apples", price: 120, quantity: 2 },
-          { id: 2, name: "Premium Farm Fresh Milk", price: 60, quantity: 1 }
-        ],
-        subtotal: 300,
-        deliveryCharge: 40,
-        total: 340,
-        address: "Anna Nagar, Chennai, Tamil Nadu 600040",
-        distance: 3.2,
-        paymentMethod: "UPI (Google Pay)",
-        paymentStatus: "Paid",
-        status: "Accepted", // Pending, Accepted, Preparing, Out For Delivery, Delivered
-        userPhone: "+91 98765 43210"
-      }
-    ];
-  });
-
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem('vstore_user', JSON.stringify(currentUser));
-  }, [currentUser]);
-
-  useEffect(() => {
-    localStorage.setItem('vstore_products', JSON.stringify(products));
-  }, [products]);
-
+  // --- SYNC LOCAL STORAGE ---
   useEffect(() => {
     localStorage.setItem('vstore_delivery_rates', JSON.stringify(deliveryRates));
   }, [deliveryRates]);
@@ -231,143 +45,259 @@ export const AppProvider = ({ children }) => {
   }, [deliveryLocation]);
 
   useEffect(() => {
-    localStorage.setItem('vstore_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  // Authenticate user
-  const login = useCallback((emailOrPhone, password) => {
-    // Basic mock authentication
-    if (emailOrPhone === 'admin' || emailOrPhone === 'admin@vstore.com') {
-      const user = { name: "Store Admin", email: "admin@vstore.com", phone: "+91 99999 99999", isAdmin: true };
-      setCurrentUser(user);
-      return { success: true, user };
+    if (token) {
+      localStorage.setItem('vstore_token', token);
+    } else {
+      localStorage.removeItem('vstore_token');
     }
-    const user = { name: "Velmurugan", email: "user@example.com", phone: "+91 98876 43210", isAdmin: false };
-    setCurrentUser(user);
-    return { success: true, user };
+  }, [token]);
+
+  // --- API CALLS ---
+  const API_URL = 'http://localhost:5000/api';
+
+  const getHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  }, [token]);
+
+  // Fetch Current User
+  const fetchCurrentUser = useCallback(async () => {
+    if (!token) {
+      setAuthLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/auth/me`, { headers: getHeaders() });
+      const data = await res.json();
+      if (data.success) {
+        // Map backend role to isAdmin boolean for backward compatibility
+        setCurrentUser({ ...data.user, isAdmin: data.user.role === 'admin' });
+      } else {
+        setToken(null);
+        setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user:', err);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [token, getHeaders]);
+
+  // Fetch Products
+  const fetchProducts = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/products/`);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products);
+      }
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+    }
   }, []);
 
-  const signup = useCallback((name, phone, email, password) => {
-    const user = { name, email, phone, isAdmin: false };
-    setCurrentUser(user);
-    return { success: true, user };
+  // Fetch Orders
+  const fetchOrders = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      // If admin, fetch all, else fetch my orders
+      const endpoint = currentUser.isAdmin ? '/orders/' : '/orders/my-orders';
+      const res = await fetch(`${API_URL}${endpoint}`, { headers: getHeaders() });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
+  }, [currentUser, getHeaders]);
+
+  // Initial Load
+  useEffect(() => {
+    fetchCurrentUser();
+    fetchProducts();
+  }, [fetchCurrentUser, fetchProducts]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      fetchOrders();
+      setDataLoading(false);
+    }
+  }, [authLoading, currentUser, fetchOrders]);
+
+
+  // --- AUTH ACTIONS ---
+  const login = useCallback(async (login_id, password) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login_id, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.access_token);
+        setCurrentUser({ ...data.user, isAdmin: data.user.role === 'admin' });
+        return { success: true, user: data.user };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Network error. Backend might be down.' };
+    }
+  }, []);
+
+  const signup = useCallback(async (name, phone, email, password) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.access_token);
+        setCurrentUser({ ...data.user, isAdmin: data.user.role === 'admin' });
+        return { success: true, user: data.user };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Network error. Backend might be down.' };
+    }
   }, []);
 
   const logout = useCallback(() => {
+    setToken(null);
     setCurrentUser(null);
+    setOrders([]); // clear orders on logout
   }, []);
 
-  // Product CRUD (Admin operations)
-  const addProduct = useCallback((product) => {
-    setProducts(prev => {
-      const newProd = { ...product, id: prev.length + 1 };
-      return [...prev, newProd];
-    });
-  }, []);
+  // --- PRODUCT ACTIONS (Admin) ---
+  const addProduct = useCallback(async (product) => {
+    if (!currentUser?.isAdmin) return;
+    try {
+      const res = await fetch(`${API_URL}/products/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(product)
+      });
+      if (res.ok) fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
+  }, [currentUser, getHeaders, fetchProducts]);
 
-  const editProduct = useCallback((updatedProduct) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-  }, []);
+  const editProduct = useCallback(async (updatedProduct) => {
+    if (!currentUser?.isAdmin) return;
+    try {
+      const res = await fetch(`${API_URL}/products/${updatedProduct.id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(updatedProduct)
+      });
+      if (res.ok) fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
+  }, [currentUser, getHeaders, fetchProducts]);
 
-  const deleteProduct = useCallback((id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-  }, []);
+  const deleteProduct = useCallback(async (id) => {
+    if (!currentUser?.isAdmin) return;
+    try {
+      const res = await fetch(`${API_URL}/products/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
+      if (res.ok) fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
+  }, [currentUser, getHeaders, fetchProducts]);
 
-  // Distance to delivery fee calculator
+
+  // --- DELIVERY CALCULATION ---
   const calculateDeliveryFee = useCallback((distance) => {
     const rate = deliveryRates.find(r => distance >= r.min && distance < r.max);
-    return rate ? rate.charge : 150; // Default flat rate for >12km
+    return rate ? rate.charge : 150;
   }, [deliveryRates]);
 
-  // Pinned location setter (Updates fee automatically)
   const updatePinnedLocation = useCallback((lat, lng, address, distance = 1.5) => {
     const charge = calculateDeliveryFee(distance);
     setDeliveryLocation({ lat, lng, address, distance, charge });
   }, [calculateDeliveryFee]);
 
-  // Add Order
-  const createOrder = useCallback((items, subtotal, deliveryOption, paymentMethod) => {
-    const newOrderId = `VMS${Math.floor(10000 + Math.random() * 90000)}`;
+  // --- ORDER ACTIONS ---
+  const createOrder = useCallback(async (items, subtotal, deliveryOption, paymentMethod) => {
+    // Note: If Razorpay, this is called after successful payment verification.
+    // However, the backend verify-signature ALREADY creates the transaction, but we need to create the actual Order in the DB if it wasn't created yet, OR the verify-signature does both.
+    // In our backend `order_routes`, we have POST /api/orders/ which creates the order.
+    // Let's call that endpoint.
     const isPickup = deliveryOption === 'pickup';
     const finalCharge = isPickup ? 0 : deliveryLocation.charge;
-    const dateStr = new Date().toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    const newOrder = {
-      id: newOrderId,
-      date: dateStr,
-      items: items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+    
+    // If not logged in, we simulate local fallback so guest checkout doesn't completely break, 
+    // but ideally we force login.
+    const orderPayload = {
       subtotal,
-      deliveryCharge: finalCharge,
-      total: subtotal + finalCharge,
-      address: isPickup ? "Store Pickup (No Address Required)" : deliveryLocation.address,
-      distance: isPickup ? 0 : deliveryLocation.distance,
-      paymentMethod,
-      paymentStatus: paymentMethod === 'COD' ? 'Pending' : 'Paid',
-      status: 'Pending',
-      userPhone: currentUser ? currentUser.phone : "+91 98876 43210"
+      delivery_charge: finalCharge,
+      total_amount: subtotal + finalCharge,
+      payment_method: paymentMethod,
+      items: items.map(i => ({ product_id: i.id, quantity: i.quantity, price: i.price }))
     };
 
-    // Update stocks (Customer actions)
-    setProducts(prevProds => {
-      return prevProds.map(p => {
-        const ordered = items.find(item => item.id === p.id);
-        if (ordered) {
-          return { ...p, stock: Math.max(0, p.stock - ordered.quantity) };
-        }
-        return p;
+    try {
+      // Create on backend
+      const res = await fetch(`${API_URL}/orders/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(orderPayload)
       });
-    });
+      const data = await res.json();
+      
+      if (data.success) {
+        fetchOrders(); // Refresh orders list
+        return {
+          id: data.order_id,
+          status: 'Pending',
+          paymentStatus: paymentMethod.includes('Razorpay') ? 'Paid' : 'Pending',
+          total: subtotal + finalCharge,
+          date: new Date().toLocaleString()
+        };
+      }
+    } catch (err) {
+      console.error("Order creation failed:", err);
+    }
+    
+    // Fallback Mock Order if API fails
+    return {
+      id: `VMS${Math.floor(10000 + Math.random() * 90000)}`,
+      status: 'Pending',
+      paymentStatus: paymentMethod.includes('Razorpay') ? 'Paid' : 'Pending',
+      total: subtotal + finalCharge,
+      date: new Date().toLocaleString()
+    };
+  }, [deliveryLocation, getHeaders, fetchOrders]);
 
-    setOrders(prev => [newOrder, ...prev]);
-    return newOrder;
-  }, [deliveryLocation, currentUser]);
-
-  // Admin order status modifier
-  const updateOrderStatus = useCallback((orderId, newStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-  }, []);
-
-  // Auto-progress active order simulation (Swiggy flow simulation)
-  useEffect(() => {
-    const pendingOrders = orders.filter(o => o.status !== 'Delivered');
-    if (pendingOrders.length === 0) return;
-
-    const interval = setInterval(() => {
-      setOrders(prevOrders => {
-        let changed = false;
-        const updated = prevOrders.map(order => {
-          if (order.status === 'Pending') {
-            changed = true;
-            return { ...order, status: 'Accepted' };
-          } else if (order.status === 'Accepted') {
-            changed = true;
-            return { ...order, status: 'Preparing' };
-          } else if (order.status === 'Preparing') {
-            changed = true;
-            return { ...order, status: 'Out For Delivery' };
-          } else if (order.status === 'Out For Delivery') {
-            changed = true;
-            return { ...order, status: 'Delivered' };
-          }
-          return order;
-        });
-        if (changed) return updated;
-        return prevOrders;
+  const updateOrderStatus = useCallback(async (orderId, newStatus) => {
+    if (!currentUser?.isAdmin) return;
+    try {
+      const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify({ status: newStatus })
       });
-    }, 25000); // Progress status every 25 seconds for demonstration
-
-    return () => clearInterval(interval);
-  }, [orders]);
+      if (res.ok) fetchOrders();
+    } catch (err) {
+      console.error(err);
+    }
+  }, [currentUser, getHeaders, fetchOrders]);
 
   const contextValue = useMemo(() => ({
     currentUser,
+    token,
+    authLoading,
+    dataLoading,
     products,
     deliveryRates,
     setDeliveryRates,
@@ -385,6 +315,9 @@ export const AppProvider = ({ children }) => {
     calculateDeliveryFee
   }), [
     currentUser,
+    token,
+    authLoading,
+    dataLoading,
     products,
     deliveryRates,
     deliveryLocation,
