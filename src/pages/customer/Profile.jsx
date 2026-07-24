@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useApp } from '../context/AppContext';
-import { User, ClipboardList, MapPin, Settings, LogOut, ChevronRight, HelpCircle } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { useApp } from '@/context/AppContext';
+import { User, ClipboardList, MapPin, Settings, LogOut, ChevronRight, HelpCircle, Phone, MessageCircle } from 'lucide-react';
 
 export default function ProfilePage({ onNavigate }) {
   const { language, setLanguage, t } = useLanguage();
@@ -139,6 +139,36 @@ export default function ProfilePage({ onNavigate }) {
             <div>
               <span className="text-xs font-bold text-primary block">{t('helpSupport')}</span>
               <span className="text-[10px] text-gray-400 block mt-0.5">Contact customer helpline or browse FAQs</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+        </div>
+
+        {/* Contact Shop - Call */}
+        <div 
+          onClick={() => window.open('tel:+919876543210', '_self')}
+          className="px-5 py-4 flex items-center justify-between border-b border-gray-100 hover:bg-white cursor-pointer transition-colors duration-150 group"
+        >
+          <div className="flex items-center space-x-3 text-left">
+            <Phone className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
+            <div>
+              <span className="text-xs font-bold text-primary block">Call Shop</span>
+              <span className="text-[10px] text-gray-400 block mt-0.5">Talk to our store representative</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+        </div>
+
+        {/* Contact Shop - WhatsApp */}
+        <div 
+          onClick={() => window.open('https://wa.me/919876543210', '_blank')}
+          className="px-5 py-4 flex items-center justify-between border-b border-gray-100 hover:bg-white cursor-pointer transition-colors duration-150 group"
+        >
+          <div className="flex items-center space-x-3 text-left">
+            <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" />
+            <div>
+              <span className="text-xs font-bold text-primary block">WhatsApp Shop</span>
+              <span className="text-[10px] text-gray-400 block mt-0.5">Message us on WhatsApp for quick help</span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400" />

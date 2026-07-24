@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { useApp } from '../context/AppContext';
-import { Search, MapPin, Globe, Heart, ShoppingCart, User, ChevronDown, Check } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import { useApp } from '@/context/AppContext';
+import { Search, MapPin, Globe, Heart, ShoppingCart, User, ChevronDown, Check, Bell, Mic } from 'lucide-react';
 
 export default function Header({ onNavigate, currentPage }) {
   const { language, setLanguage, t } = useLanguage();
@@ -13,9 +13,17 @@ export default function Header({ onNavigate, currentPage }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  
+  const notifications = [
+    { id: 1, title: 'Order Confirmed', message: 'Your order #VS1024 has been confirmed.', time: '10 mins ago', read: false },
+    { id: 2, title: 'Preparing', message: 'Your items are being packed.', time: '5 mins ago', read: false },
+  ];
   
   const suggestionsRef = useRef(null);
   const langDropdownRef = useRef(null);
+  const notificationsRef = useRef(null);
 
   // Address lookup options
   const [addressSearch, setAddressSearch] = useState('');
@@ -35,6 +43,9 @@ export default function Header({ onNavigate, currentPage }) {
       }
       if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
         setShowLangDropdown(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -124,9 +135,15 @@ export default function Header({ onNavigate, currentPage }) {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm glass-input text-gray-900 placeholder-gray-500 focus:outline-none"
+                  className="w-full pl-10 pr-12 py-2.5 rounded-full text-sm glass-input text-gray-900 placeholder-gray-500 focus:outline-none"
                 />
                 <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-gray-400" />
+                <button 
+                  onClick={() => setIsListening(!isListening)}
+                  className={`absolute right-2.5 top-2 p-1 rounded-full transition-colors ${isListening ? 'bg-red-100 text-red-500 animate-pulse' : 'hover:bg-gray-100 text-gray-400'}`}
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Suggestions Panel */}
@@ -189,6 +206,39 @@ export default function Header({ onNavigate, currentPage }) {
                       <span className="flex items-center">🇮🇳 {t('tamil')}</span>
                       {language === 'ta' && <Check className="w-3.5 h-3.5 text-accent" />}
                     </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Notification Bell */}
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2.5 hover:bg-primary/5 rounded-full text-primary hover:text-accent transition-all duration-200 border border-transparent hover:border-primary/10 relative"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  {notifications.filter(n => !n.read).length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white">
+                      {notifications.filter(n => !n.read).length}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2.5 w-72 bg-white/95 backdrop-blur-md rounded-2xl shadow-premium border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-100 flex justify-between items-center">
+                      <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Notifications</span>
+                    </div>
+                    <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+                      {notifications.map((notif) => (
+                        <div key={notif.id} className="p-4 hover:bg-primary/5 cursor-pointer transition-colors">
+                          <p className="text-sm font-bold text-primary">{notif.title}</p>
+                          <p className="text-xs text-gray-600 mt-0.5">{notif.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">{notif.time}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

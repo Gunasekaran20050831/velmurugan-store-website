@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { useApp } from '../context/AppContext';
-import ProductCard from '../components/ProductCard';
-import { Heart, Star, ShoppingBag, ArrowLeft, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import { useApp } from '@/context/AppContext';
+import ProductCard from '@/components/ProductCard/ProductCard';
+import { Heart, Star, ShoppingBag, ArrowLeft, ShieldCheck, Truck, RefreshCw, Share2 } from 'lucide-react';
 
 export default function ProductDetails({ product, onNavigate }) {
   const { language, t } = useLanguage();
@@ -30,6 +30,10 @@ export default function ProductDetails({ product, onNavigate }) {
       addToCart(product);
       onNavigate('cart');
     }
+  };
+
+  const handleShare = () => {
+    alert("Share Modal: Share via WhatsApp, Facebook, Instagram, or Copy Link");
   };
 
   return (
@@ -84,12 +88,20 @@ export default function ProductDetails({ product, onNavigate }) {
               <span className="text-xs font-bold text-accent uppercase tracking-wider">
                 {language === 'ta' ? product.categoryTa : product.category}
               </span>
-              <button
-                onClick={() => toggleWishlist(product)}
-                className={`p-2.5 rounded-full border transition-all duration-200 ${isWish ? 'bg-red-50 border-red-100 text-red-500 scale-110' : 'bg-gray-50 border-gray-150 text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
-              >
-                <Heart className={`w-5 h-5 ${isWish ? 'fill-current' : ''}`} />
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleShare}
+                  className="p-2.5 rounded-full bg-gray-50 border border-gray-150 text-gray-400 hover:text-primary hover:bg-primary/5 transition-all duration-200"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  className={`p-2.5 rounded-full border transition-all duration-200 ${isWish ? 'bg-red-50 border-red-100 text-red-500 scale-110' : 'bg-gray-50 border-gray-150 text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
+                >
+                  <Heart className={`w-5 h-5 ${isWish ? 'fill-current' : ''}`} />
+                </button>
+              </div>
             </div>
             
             <h1 className="text-2xl font-extrabold text-primary font-sans leading-snug">

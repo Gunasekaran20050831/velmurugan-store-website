@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useApp } from '../context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useApp } from '@/context/AppContext';
 import { 
   BarChart3, Package, ClipboardList, Users, ShieldAlert, 
   Map, Trash2, Edit3, Plus, ArrowLeft, TrendingUp, DollarSign, 
@@ -29,6 +29,9 @@ export default function AdminPanel({ onNavigate }) {
   const [prodImages, setProdImages] = useState([
     "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600"
   ]);
+
+  // Product Search/Filter
+  const [productSearch, setProductSearch] = useState('');
 
   // Delivery rate state
   const [ratesForm, setRatesForm] = useState([...deliveryRates]);
@@ -158,31 +161,37 @@ export default function AdminPanel({ onNavigate }) {
         </button>
       </div>
 
-      {/* Tabs list */}
-      <div className="flex space-x-1 border-b border-gray-150 pb-px">
-        {[
-          { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'orders', label: 'Orders', icon: ClipboardList },
-          { id: 'products', label: 'Products', icon: Package },
-          { id: 'delivery', label: 'Delivery Fees', icon: Map }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-5 py-3 border-b-2 text-xs font-bold transition-all duration-200 ${
-                activeTab === tab.id 
-                  ? 'border-primary text-primary' 
-                  : 'border-transparent text-gray-400 hover:text-primary'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Main Layout Grid */}
+      <div className="flex flex-col md:flex-row gap-6 mt-6">
+        
+        {/* Sidebar */}
+        <div className="w-full md:w-64 shrink-0 bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-gray-150 shadow-sm flex flex-col space-y-2 h-fit">
+          {[
+            { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+            { id: 'orders', label: 'Orders', icon: ClipboardList },
+            { id: 'products', label: 'Products', icon: Package },
+            { id: 'delivery', label: 'Delivery Fees', icon: Map }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-200 ${
+                  activeTab === tab.id 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-transparent text-gray-500 hover:bg-primary/5 hover:text-primary'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 min-w-0">
 
       {/* Tab: Dashboard Panel */}
       {activeTab === 'dashboard' && (
@@ -423,17 +432,28 @@ export default function AdminPanel({ onNavigate }) {
         <div className="space-y-4 animate-in fade-in duration-200">
           <div className="flex justify-between items-center pl-1">
             <h3 className="text-sm font-extrabold text-primary">Inventory & Stock Manager</h3>
-            <button 
-              onClick={handleOpenAddModal}
-              className="luxury-btn-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-md"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{t('addProdBtn')}</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <input 
+                type="text"
+                placeholder="Search products..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="px-4 py-2 rounded-xl text-xs border border-gray-200 glass-input min-w-[200px]"
+              />
+              <button 
+                onClick={handleOpenAddModal}
+                className="luxury-btn-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-md shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{t('addProdBtn')}</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {products.map((prod) => (
+            {products
+              .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.category.toLowerCase().includes(productSearch.toLowerCase()))
+              .map((prod) => (
               <div 
                 key={prod.id}
                 className="bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-gray-150 shadow-sm flex items-center gap-4 justify-between"
@@ -513,6 +533,9 @@ export default function AdminPanel({ onNavigate }) {
           </button>
         </form>
       )}
+
+      </div> {/* End of Content Area */}
+      </div> {/* End of Main Layout Grid */}
 
       {/* Add / Edit Product Modal Drawer */}
       {showProductModal && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { useApp } from '../context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import { useApp } from '@/context/AppContext';
 import { ArrowLeft, ShieldCheck, Landmark, Smartphone, DollarSign, Loader2 } from 'lucide-react';
 
 export default function PaymentPage({ onNavigate }) {

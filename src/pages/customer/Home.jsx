@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { useApp } from '../context/AppContext';
-import ProductCard from '../components/ProductCard';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import { useApp } from '@/context/AppContext';
+import ProductCard from '@/components/ProductCard/ProductCard';
 import { ShoppingCart, Flame, Star, Sparkles, Clock, ArrowRight } from 'lucide-react';
 
 export default function Home({ onNavigate }) {

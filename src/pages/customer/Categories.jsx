@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 
 export default function CategoriesPage({ onNavigate, setActiveCategory }) {

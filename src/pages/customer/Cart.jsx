@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
 
 export default function CartPage({ onNavigate }) {

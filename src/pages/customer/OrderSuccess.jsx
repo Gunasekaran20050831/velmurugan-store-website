@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import muruganImg from '../assets/murugan.png';
+import { useLanguage } from '@/context/LanguageContext';
+import muruganImg from '@/assets/images/murugan.png';
 import confetti from 'canvas-confetti';
 
 export default function OrderSuccess({ order, onNavigate }) {

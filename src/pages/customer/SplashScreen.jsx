@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import muruganImg from '../assets/murugan.png';
+import { useLanguage } from '@/context/LanguageContext';
+import muruganImg from '@/assets/images/murugan.png';
 
 export default function SplashScreen({ onComplete }) {
   const { t } = useLanguage();

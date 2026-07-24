@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
 import { Home, Grid, ClipboardList, Heart, User } from 'lucide-react';
 
 export default function BottomNavigation({ onNavigate, currentPage }) {

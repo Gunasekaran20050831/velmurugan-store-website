@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useApp } from './context/AppContext';
 
-// Pages
-import SplashScreen from './pages/SplashScreen';
-import Home from './pages/Home';
-import CategoriesPage from './pages/CategoriesPage';
-import ProductDetails from './pages/ProductDetails';
-import Auth from './pages/Auth';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import PaymentPage from './pages/PaymentPage';
-import OrderSuccess from './pages/OrderSuccess';
-import OrderTracking from './pages/OrderTracking';
-import ProfilePage from './pages/ProfilePage';
-import AdminPanel from './pages/AdminPanel';
-
 // Shared Components
-import Header from './components/Header';
-import BottomNavigation from './components/BottomNavigation';
+import Header from '@/components/Navbar/Navbar';
+import BottomNavigation from '@/components/Navbar/BottomNavigation';
+import { ScreenLoader } from '@/components/Loader/Loader';
+
+// Lazy Loaded Pages
+const SplashScreen = lazy(() => import('@/pages/customer/SplashScreen'));
+const Home = lazy(() => import('@/pages/customer/Home'));
+const CategoriesPage = lazy(() => import('@/pages/customer/Categories'));
+const ProductDetails = lazy(() => import('@/pages/customer/ProductDetails'));
+const Auth = lazy(() => import('@/pages/auth/Login'));
+const CartPage = lazy(() => import('@/pages/customer/Cart'));
+const CheckoutPage = lazy(() => import('@/pages/customer/Checkout'));
+const PaymentPage = lazy(() => import('@/pages/customer/Payment'));
+const OrderSuccess = lazy(() => import('@/pages/customer/OrderSuccess'));
+const OrderTracking = lazy(() => import('@/pages/customer/OrderTracking'));
+const ProfilePage = lazy(() => import('@/pages/customer/Profile'));
+const AdminPanel = lazy(() => import('@/pages/admin/Dashboard'));
 
 export default function App() {
   const { t } = useLanguage();
@@ -54,7 +55,7 @@ export default function App() {
 
       {/* Main Viewport Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-0 sm:px-4 md:px-0">
-        
+        <Suspense fallback={<ScreenLoader />}>
         {/* Splash View */}
         {currentPage === 'splash' && (
           <SplashScreen onComplete={() => handleNavigate('home')} />
@@ -126,7 +127,7 @@ export default function App() {
         {currentPage === 'admin' && (
           <AdminPanel onNavigate={handleNavigate} />
         )}
-
+        </Suspense>
       </main>
 
       {/* Shared Footer (Desktop Viewports only, except splash) */}

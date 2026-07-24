@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { useApp } from '../context/AppContext';
-import LeafletMap from '../components/LeafletMap';
-import { ArrowLeft, ShoppingBag, MapPin, Navigation, Truck, ClipboardCheck } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import { useApp } from '@/context/AppContext';
+import LeafletMap from '@/components/LeafletMap';
+import { ArrowLeft, ShoppingBag, MapPin, Navigation, Truck, ClipboardCheck, Clock } from 'lucide-react';
 
 export default function CheckoutPage({ onNavigate }) {
   const { language, t } = useLanguage();
@@ -211,6 +211,16 @@ export default function CheckoutPage({ onNavigate }) {
               <span className="text-accent-dark">₹{totalAmount}</span>
             </div>
           </div>
+
+          {deliveryOption === 'delivery' && (
+            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 flex items-center space-x-3">
+              <Clock className="w-5 h-5 text-primary shrink-0" />
+              <div>
+                <span className="block text-[10px] text-gray-500 font-bold uppercase">Estimated Delivery Time</span>
+                <span className="block text-xs font-black text-primary mt-0.5">Delivery in 20–30 mins</span>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={handleProceedToPayment}

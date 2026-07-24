@@ -1,7 +1,7 @@
 import React from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import ProductCard from '../components/ProductCard';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
+import ProductCard from '@/components/ProductCard/ProductCard';
 import { Heart, ArrowLeft } from 'lucide-react';
 
 export default function WishlistPage({ onNavigate }) {
