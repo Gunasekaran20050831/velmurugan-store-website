@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const CartContext = createContext();
 
@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('vstore_wishlist', JSON.stringify(wishlistItems));
   }, [wishlistItems]);
 
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -31,9 +31,13 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity }];
     });
-  };
+  }, []);
 
-  const updateQuantity = (productId, newQuantity) => {
+  const removeFromCart = useCallback((productId) => {
+    setCartItems(prev => prev.filter(item => item.id !== productId));
+  }, []);
+
+  const updateQuantity = useCallback((productId, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
@@ -41,17 +45,13 @@ export const CartProvider = ({ children }) => {
     setCartItems(prev => prev.map(item => 
       item.id === productId ? { ...item, quantity: newQuantity } : item
     ));
-  };
+  }, [removeFromCart]);
 
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
-  };
-
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
-  const toggleWishlist = (product) => {
+  const toggleWishlist = useCallback((product) => {
     setWishlistItems(prev => {
       const exists = prev.find(item => item.id === product.id);
       if (exists) {
@@ -59,28 +59,40 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, product];
     });
-  };
+  }, []);
 
-  const isInWishlist = (productId) => {
+  const isInWishlist = useCallback((productId) => {
     return wishlistItems.some(item => item.id === productId);
-  };
+  }, [wishlistItems]);
 
-  const getSubtotal = () => {
+  const getSubtotal = useCallback(() => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  }, [cartItems]);
+
+  const contextValue = useMemo(() => ({
+    cartItems,
+    wishlistItems,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    toggleWishlist,
+    isInWishlist,
+    getSubtotal
+  }), [
+    cartItems, 
+    wishlistItems, 
+    addToCart, 
+    updateQuantity, 
+    removeFromCart, 
+    clearCart, 
+    toggleWishlist, 
+    isInWishlist, 
+    getSubtotal
+  ]);
 
   return (
-    <CartContext.Provider value={{
-      cartItems,
-      wishlistItems,
-      addToCart,
-      updateQuantity,
-      removeFromCart,
-      clearCart,
-      toggleWishlist,
-      isInWishlist,
-      getSubtotal
-    }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

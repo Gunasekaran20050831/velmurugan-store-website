@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const AppContext = createContext();
 
@@ -235,7 +235,7 @@ export const AppProvider = ({ children }) => {
   }, [orders]);
 
   // Authenticate user
-  const login = (emailOrPhone, password) => {
+  const login = useCallback((emailOrPhone, password) => {
     // Basic mock authentication
     if (emailOrPhone === 'admin' || emailOrPhone === 'admin@vstore.com') {
       const user = { name: "Store Admin", email: "admin@vstore.com", phone: "+91 99999 99999", isAdmin: true };
@@ -245,48 +245,48 @@ export const AppProvider = ({ children }) => {
     const user = { name: "Velmurugan", email: "user@example.com", phone: "+91 98876 43210", isAdmin: false };
     setCurrentUser(user);
     return { success: true, user };
-  };
+  }, []);
 
-  const signup = (name, phone, email, password) => {
+  const signup = useCallback((name, phone, email, password) => {
     const user = { name, email, phone, isAdmin: false };
     setCurrentUser(user);
     return { success: true, user };
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setCurrentUser(null);
-  };
+  }, []);
 
   // Product CRUD (Admin operations)
-  const addProduct = (product) => {
+  const addProduct = useCallback((product) => {
     setProducts(prev => {
       const newProd = { ...product, id: prev.length + 1 };
       return [...prev, newProd];
     });
-  };
+  }, []);
 
-  const editProduct = (updatedProduct) => {
+  const editProduct = useCallback((updatedProduct) => {
     setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-  };
+  }, []);
 
-  const deleteProduct = (id) => {
+  const deleteProduct = useCallback((id) => {
     setProducts(prev => prev.filter(p => p.id !== id));
-  };
+  }, []);
 
   // Distance to delivery fee calculator
-  const calculateDeliveryFee = (distance) => {
+  const calculateDeliveryFee = useCallback((distance) => {
     const rate = deliveryRates.find(r => distance >= r.min && distance < r.max);
     return rate ? rate.charge : 150; // Default flat rate for >12km
-  };
+  }, [deliveryRates]);
 
   // Pinned location setter (Updates fee automatically)
-  const updatePinnedLocation = (lat, lng, address, distance = 1.5) => {
+  const updatePinnedLocation = useCallback((lat, lng, address, distance = 1.5) => {
     const charge = calculateDeliveryFee(distance);
     setDeliveryLocation({ lat, lng, address, distance, charge });
-  };
+  }, [calculateDeliveryFee]);
 
   // Add Order
-  const createOrder = (items, subtotal, deliveryOption, paymentMethod) => {
+  const createOrder = useCallback((items, subtotal, deliveryOption, paymentMethod) => {
     const newOrderId = `VMS${Math.floor(10000 + Math.random() * 90000)}`;
     const isPickup = deliveryOption === 'pickup';
     const finalCharge = isPickup ? 0 : deliveryLocation.charge;
@@ -327,12 +327,12 @@ export const AppProvider = ({ children }) => {
 
     setOrders(prev => [newOrder, ...prev]);
     return newOrder;
-  };
+  }, [deliveryLocation, currentUser]);
 
   // Admin order status modifier
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = useCallback((orderId, newStatus) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-  };
+  }, []);
 
   // Auto-progress active order simulation (Swiggy flow simulation)
   useEffect(() => {
@@ -366,25 +366,43 @@ export const AppProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [orders]);
 
+  const contextValue = useMemo(() => ({
+    currentUser,
+    products,
+    deliveryRates,
+    setDeliveryRates,
+    deliveryLocation,
+    orders,
+    login,
+    signup,
+    logout,
+    addProduct,
+    editProduct,
+    deleteProduct,
+    updatePinnedLocation,
+    createOrder,
+    updateOrderStatus,
+    calculateDeliveryFee
+  }), [
+    currentUser,
+    products,
+    deliveryRates,
+    deliveryLocation,
+    orders,
+    login,
+    signup,
+    logout,
+    addProduct,
+    editProduct,
+    deleteProduct,
+    updatePinnedLocation,
+    createOrder,
+    updateOrderStatus,
+    calculateDeliveryFee
+  ]);
+
   return (
-    <AppContext.Provider value={{
-      currentUser,
-      products,
-      deliveryRates,
-      setDeliveryRates,
-      deliveryLocation,
-      orders,
-      login,
-      signup,
-      logout,
-      addProduct,
-      editProduct,
-      deleteProduct,
-      updatePinnedLocation,
-      createOrder,
-      updateOrderStatus,
-      calculateDeliveryFee
-    }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );
