@@ -8,6 +8,7 @@ from database import init_db, get_db_connection
 from routes.auth_routes import auth_bp
 from routes.product_routes import product_bp
 from routes.order_routes import order_bp
+from routes.admin_routes import admin_bp
 from utils import token_required
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ init_db()
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(product_bp, url_prefix='/api/products')
 app.register_blueprint(order_bp, url_prefix='/api/orders')
+app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
 # Razorpay Client
 razorpay_client = razorpay.Client(auth=(Config.RAZORPAY_KEY_ID, Config.RAZORPAY_KEY_SECRET))
