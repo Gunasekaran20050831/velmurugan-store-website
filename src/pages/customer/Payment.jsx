@@ -2,25 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useApp } from '@/context/AppContext';
-import { ArrowLeft, ShieldCheck, Landmark, Smartphone, DollarSign, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, CreditCard, DollarSign, Loader2 } from 'lucide-react';
 
 export default function PaymentPage({ onNavigate }) {
   const { t } = useLanguage();
   const { cartItems, getSubtotal, clearCart } = useCart();
-  const { createOrder } = useApp();
+  const { createOrder, currentUser } = useApp();
 
-  const [paymentMethod, setPaymentMethod] = useState('UPI_GPAY'); // COD, UPI_GPAY, UPI_PHONEPE, UPI_PAYTM
+  const [paymentMethod, setPaymentMethod] = useState('RAZORPAY'); // COD, RAZORPAY
   const [checkoutMeta, setCheckoutMeta] = useState(null);
-  const [showPinModal, setShowPinModal] = useState(false);
-  
-  // UPI PIN states
-  const [pinInputs, setPinInputs] = useState(['', '', '', '']);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [orderId, setOrderId] = useState('');
-
+  const [paymentError, setPaymentError] = useState('');
+  
   useEffect(() => {
-    // Generate order ID
-    setOrderId(`VMS${Math.floor(10000 + Math.random() * 90000)}`);
     const savedMeta = localStorage.getItem('vstore_checkout_meta');
     if (savedMeta) {
       setCheckoutMeta(JSON.parse(savedMeta));
@@ -31,11 +25,13 @@ export default function PaymentPage({ onNavigate }) {
   const deliveryCharge = checkoutMeta ? checkoutMeta.deliveryCharge : 0;
   const totalAmount = subtotal + deliveryCharge;
 
-  const handlePaymentSubmit = (e) => {
+  const handlePaymentSubmit = async (e) => {
     e.preventDefault();
+    setPaymentError('');
+    setIsProcessing(true);
+
     if (paymentMethod === 'COD') {
       // Direct success for Cash On Delivery
-      setIsProcessing(true);
       setTimeout(() => {
         const order = createOrder(
           cartItems, 
@@ -47,46 +43,101 @@ export default function PaymentPage({ onNavigate }) {
         setIsProcessing(false);
         onNavigate('order-success', order);
       }, 1500);
-    } else {
-      // Trigger UPI Pin entry simulator
-      setShowPinModal(true);
+    } else if (paymentMethod === 'RAZORPAY') {
+      try {
+        // 1. Create order on backend
+        const response = await fetch('http://localhost:5000/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: totalAmount,
+            currency: 'INR',
+            receipt: `receipt_${Date.now()}`
+          })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to create payment order');
+        }
+
+        const razorpayOrderId = data.order_id;
+
+        // 2. Open Razorpay Checkout Modal
+        const options = {
+          key: "rzp_test_mock_key_id", // Replace with real key in production frontend if needed, though usually signature handles it
+          amount: data.amount,
+          currency: data.currency,
+          name: t('brandName'),
+          description: "Premium Purchase",
+          order_id: razorpayOrderId,
+          handler: async function (response) {
+            try {
+              setIsProcessing(true);
+              const internalOrderId = `VMS${Math.floor(10000 + Math.random() * 90000)}`;
+
+              // 3. Verify signature on backend
+              const verifyRes = await fetch('http://localhost:5000/api/payment/verify-signature', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  amount: totalAmount,
+                  internal_order_id: internalOrderId,
+                  customer_phone: currentUser ? currentUser.phone : "+91 98876 43210"
+                })
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                // Success! Create order locally
+                const order = createOrder(
+                  cartItems, 
+                  subtotal, 
+                  checkoutMeta?.deliveryOption || 'delivery', 
+                  'Razorpay (Paid)'
+                );
+                // Override the generated ID with the one we passed to backend
+                order.id = internalOrderId; 
+                order.paymentId = response.razorpay_payment_id;
+
+                clearCart();
+                setIsProcessing(false);
+                onNavigate('order-success', order);
+              } else {
+                throw new Error("Payment Verification Failed.");
+              }
+            } catch (err) {
+              setPaymentError(err.message || 'Payment verification failed. Please contact support.');
+              setIsProcessing(false);
+            }
+          },
+          prefill: {
+            name: currentUser ? currentUser.name : "Velmurugan Customer",
+            email: currentUser ? currentUser.email : "user@example.com",
+            contact: currentUser ? currentUser.phone : "9887643210"
+          },
+          theme: {
+            color: "#0A235C"
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        
+        rzp.on('payment.failed', function (response){
+          setPaymentError(response.error.description || 'Payment failed. Please try again.');
+          setIsProcessing(false);
+        });
+
+        rzp.open();
+
+      } catch (err) {
+        setPaymentError(err.message || 'Server error. Please try again later.');
+        setIsProcessing(false);
+      }
     }
-  };
-
-  const handlePinChange = (element, index) => {
-    if (isNaN(element.value)) return false;
-    setPinInputs([...pinInputs.map((d, idx) => (idx === index ? element.value : d))]);
-
-    // Focus next input
-    if (element.nextSibling && element.value !== '') {
-      element.nextSibling.focus();
-    }
-  };
-
-  const handleAuthorizePayment = () => {
-    const pin = pinInputs.join('');
-    if (pin.length < 4) return;
-
-    setIsProcessing(true);
-    setShowPinModal(false);
-
-    // Simulated network latency
-    setTimeout(() => {
-      let upiBrand = 'UPI';
-      if (paymentMethod === 'UPI_GPAY') upiBrand = 'Google Pay';
-      if (paymentMethod === 'UPI_PHONEPE') upiBrand = 'PhonePe';
-      if (paymentMethod === 'UPI_PAYTM') upiBrand = 'Paytm';
-
-      const order = createOrder(
-        cartItems, 
-        subtotal, 
-        checkoutMeta?.deliveryOption || 'delivery', 
-        `UPI (${upiBrand})`
-      );
-      clearCart();
-      setIsProcessing(false);
-      onNavigate('order-success', order);
-    }, 2200);
   };
 
   return (
@@ -103,71 +154,36 @@ export default function PaymentPage({ onNavigate }) {
 
       <h1 className="text-2xl font-extrabold text-primary font-sans">{t('paymentTitle')}</h1>
 
+      {paymentError && (
+        <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-xs font-bold border border-red-100 flex justify-between items-center">
+          <span>{paymentError}</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
         {/* Payment Methods Form */}
         <form onSubmit={handlePaymentSubmit} className="lg:col-span-2 space-y-4">
           <div className="bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-gray-150 space-y-4 shadow-sm">
             
-            {/* UPI Options */}
+            {/* Online Payment Options */}
             <div className="space-y-3 text-left">
-              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">UPI Applications</label>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Secure Online Payment</label>
               
-              {/* Google Pay */}
-              <label className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'UPI_GPAY' ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-150 bg-white/40 hover:bg-gray-50'}`}>
+              <label className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'RAZORPAY' ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-150 bg-white/40 hover:bg-gray-50'}`}>
                 <div className="flex items-center space-x-3">
                   <input 
                     type="radio" 
                     name="payment" 
-                    value="UPI_GPAY"
-                    checked={paymentMethod === 'UPI_GPAY'}
-                    onChange={() => setPaymentMethod('UPI_GPAY')}
+                    value="RAZORPAY"
+                    checked={paymentMethod === 'RAZORPAY'}
+                    onChange={() => setPaymentMethod('RAZORPAY')}
                     className="text-primary focus:ring-primary w-4 h-4"
                   />
-                  <Smartphone className="w-5 h-5 text-primary shrink-0" />
+                  <CreditCard className="w-5 h-5 text-primary shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-primary block">Google Pay</span>
-                    <span className="text-[10px] text-gray-400 block mt-0.5">{t('upiDesc')}</span>
-                  </div>
-                </div>
-                <span className="text-xs font-black text-primary">₹{totalAmount}</span>
-              </label>
-
-              {/* PhonePe */}
-              <label className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'UPI_PHONEPE' ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-150 bg-white/40 hover:bg-gray-50'}`}>
-                <div className="flex items-center space-x-3">
-                  <input 
-                    type="radio" 
-                    name="payment" 
-                    value="UPI_PHONEPE"
-                    checked={paymentMethod === 'UPI_PHONEPE'}
-                    onChange={() => setPaymentMethod('UPI_PHONEPE')}
-                    className="text-primary focus:ring-primary w-4 h-4"
-                  />
-                  <Smartphone className="w-5 h-5 text-primary shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-primary block">PhonePe</span>
-                    <span className="text-[10px] text-gray-400 block mt-0.5">{t('upiDesc')}</span>
-                  </div>
-                </div>
-                <span className="text-xs font-black text-primary">₹{totalAmount}</span>
-              </label>
-
-              {/* Paytm */}
-              <label className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'UPI_PAYTM' ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-150 bg-white/40 hover:bg-gray-50'}`}>
-                <div className="flex items-center space-x-3">
-                  <input 
-                    type="radio" 
-                    name="payment" 
-                    value="UPI_PAYTM"
-                    checked={paymentMethod === 'UPI_PAYTM'}
-                    onChange={() => setPaymentMethod('UPI_PAYTM')}
-                    className="text-primary focus:ring-primary w-4 h-4"
-                  />
-                  <Smartphone className="w-5 h-5 text-primary shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-primary block">Paytm</span>
-                    <span className="text-[10px] text-gray-400 block mt-0.5">{t('upiDesc')}</span>
+                    <span className="text-xs font-bold text-primary block">Razorpay Checkout</span>
+                    <span className="text-[10px] text-gray-400 block mt-0.5">UPI, Credit/Debit Cards, NetBanking, Wallets</span>
                   </div>
                 </div>
                 <span className="text-xs font-black text-primary">₹{totalAmount}</span>
@@ -213,7 +229,7 @@ export default function PaymentPage({ onNavigate }) {
                 <span>{t('processingPayment')}</span>
               </>
             ) : (
-              <span>{t('payNow')}</span>
+              <span>{paymentMethod === 'RAZORPAY' ? 'Proceed to Pay' : t('payNow')}</span>
             )}
           </button>
         </form>
@@ -254,78 +270,6 @@ export default function PaymentPage({ onNavigate }) {
         </div>
 
       </div>
-
-      {/* UPI PIN secure authentication overlay modal */}
-      {showPinModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-white rounded-3xl shadow-premium border border-gray-100 overflow-hidden text-center animate-in zoom-in-95 duration-200">
-            <div className="bg-primary text-white p-6 text-left">
-              <span className="text-[10px] text-accent font-bold uppercase tracking-wider">{t('upiSimTitle')}</span>
-              <h3 className="text-base font-extrabold font-sans mt-0.5">{t('upiSimSubtitle')}</h3>
-            </div>
-
-            <div className="p-6 space-y-5 text-left">
-              {/* Receipt details */}
-              <div className="bg-gray-50 p-4 rounded-2xl space-y-2 border border-gray-150">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-gray-500">{t('merchantName')}</span>
-                  <span className="text-primary">{t('brandName')}</span>
-                </div>
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-gray-500">{t('merchantUpi')}</span>
-                  <span className="text-primary font-mono text-[10px]">velmuruganstore@upi</span>
-                </div>
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-gray-500">{t('orderId')}</span>
-                  <span className="text-primary font-mono text-[10px]">{orderId}</span>
-                </div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between text-xs font-black">
-                  <span className="text-gray-500">{t('amountToPay')}</span>
-                  <span className="text-accent-dark">₹{totalAmount}</span>
-                </div>
-              </div>
-
-              {/* Pin inputs */}
-              <div className="text-center">
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">{t('enterUpiPin')}</label>
-                <div className="flex justify-center gap-3">
-                  {pinInputs.map((data, index) => (
-                    <input
-                      key={index}
-                      type="password"
-                      maxLength="1"
-                      value={data}
-                      onChange={(e) => handlePinChange(e.target, index)}
-                      onFocus={(e) => e.target.select()}
-                      className="w-10 h-10 text-center text-lg font-black border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 bg-gray-50"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowPinModal(false)}
-                  className="flex-1 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-500 text-center"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAuthorizePayment}
-                  className="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-xl text-xs font-bold shadow-md text-center"
-                >
-                  {t('upiConfirmBtn')}
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
