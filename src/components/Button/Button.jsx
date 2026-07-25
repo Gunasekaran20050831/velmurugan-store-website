@@ -27,7 +27,7 @@ const Button = ({
   
   return (
     <button
-      className={\`\${baseClasses} \${variants[variant]} \${sizes[size]} \${fullWidth ? 'w-full' : ''} \${className}\`}
+      className={[baseClasses, variants[variant], sizes[size], fullWidth ? 'w-full' : '', className].filter(Boolean).join(' ')}
       disabled={isLoading || props.disabled}
       {...props}
     >

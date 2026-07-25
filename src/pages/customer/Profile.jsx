@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
-import { User, ClipboardList, MapPin, Settings, LogOut, ChevronRight, HelpCircle, Phone, MessageCircle, Moon, Sun, Monitor } from 'lucide-react';
+import { User, MapPin, Settings, LogOut, HelpCircle, Phone, MessageCircle, Moon, Sun, Monitor } from 'lucide-react';
 
 export default function ProfilePage({ onNavigate }) {
   const { language, setLanguage, t } = useLanguage();

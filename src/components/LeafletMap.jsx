@@ -136,7 +136,7 @@ export default function LeafletMap({ onLocationSelected, initialLat, initialLng 
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [initialLat, initialLng, onLocationSelected]);
 
   // Handle address searches (Mock resolver for standard Chennai areas)
   const handleSearch = (e) => {

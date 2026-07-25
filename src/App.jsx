@@ -1,6 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { useLanguage } from './context/LanguageContext';
-import { useApp } from './context/AppContext';
+import React, { useState, Suspense, lazy } from 'react';
 
 // Shared Components
 import Header from '@/components/Navbar/Navbar';
@@ -29,14 +27,8 @@ const FAQ = lazy(() => import('@/pages/info/FAQ'));
 const PolicyPage = lazy(() => import('@/pages/info/PolicyPage'));
 
 export default function App() {
-  const { t } = useLanguage();
-  const { currentUser } = useApp();
-
   const [currentPage, setCurrentPage] = useState('splash');
   const [pageData, setPageData] = useState(null);
-  
-  // Shared active category to sync between CategoriesPage and Home
-  const [activeCategory, setActiveCategory] = useState('All');
 
   // Handle routing with optional metadata
   const handleNavigate = (page, data = null) => {
@@ -77,7 +69,6 @@ export default function App() {
         {currentPage === 'categories' && (
           <CategoriesPage 
             onNavigate={handleNavigate} 
-            setActiveCategory={handleNavigate} // Trick categories page to sync category state
           />
         )}
 

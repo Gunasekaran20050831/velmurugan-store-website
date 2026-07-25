@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useApp } from '@/context/AppContext';
-import { ClipboardList, CheckCircle2, ChevronRight, Phone, MessageSquare, MapPin } from 'lucide-react';
+import { ClipboardList, CheckCircle2, Phone, MessageSquare, MapPin } from 'lucide-react';
 
 export default function OrderTracking({ order, onNavigate }) {
   const { t } = useLanguage();
