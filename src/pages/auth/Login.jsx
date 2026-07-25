@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useApp } from '@/context/AppContext';
 import { Mail, Phone, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function Auth({ onNavigate }) {
   const { t } = useLanguage();
-  const { login, signup } = useApp();
+  const { login, signup, loginWithOtp } = useApp();
   
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [isOtpLogin, setIsOtpLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Form Fields
@@ -58,6 +60,7 @@ export default function Auth({ onNavigate }) {
       return;
     }
     setErrorMsg('');
+    setIsOtpLogin(false);
     setShowOtpModal(true); // Open OTP flow
   };
 
@@ -78,17 +81,27 @@ export default function Auth({ onNavigate }) {
       setErrorMsg("Please enter 4 digits.");
       return;
     }
-    
     setIsLoading(true);
     setErrorMsg('');
-    const res = await signup(fullName, phone, email, password);
+
+    let res;
+    if (isOtpLogin) {
+      res = await loginWithOtp(emailOrPhone, code);
+    } else {
+      res = await signup(fullName, phone, email, password);
+    }
+    
     setIsLoading(false);
     
     if (res.success) {
       setShowOtpModal(false);
-      onNavigate('home');
+      if (res.user?.isAdmin) {
+        onNavigate('admin');
+      } else {
+        onNavigate('home');
+      }
     } else {
-      setErrorMsg(res.message || "Signup failed.");
+      setErrorMsg(res.message || (isOtpLogin ? "OTP Login failed." : "Signup failed."));
     }
   };
 
@@ -112,8 +125,11 @@ export default function Auth({ onNavigate }) {
           </button>
         </div>
 
-        {/* Title */}
-        <div className="text-center mb-6">
+        {/* Title & Logo */}
+        <div className="text-center mb-6 flex flex-col items-center">
+          <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center mb-4 p-1">
+            <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
+          </div>
           <h3 className="text-xl font-extrabold text-primary font-sans">
             {isLogin ? t('welcomeBack') : t('createAccount')}
           </h3>
@@ -171,8 +187,20 @@ export default function Auth({ onNavigate }) {
                 <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary w-3.5 h-3.5" />
                 <span className="text-[10px] text-gray-400 font-bold">{t('rememberMe')}</span>
               </label>
-              <button type="button" className="text-[10px] text-accent font-bold hover:underline">
-                {t('forgotPassword')}
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (!emailOrPhone) {
+                    setErrorMsg("Please enter your Mobile number first to login with OTP.");
+                    return;
+                  }
+                  setErrorMsg('');
+                  setIsOtpLogin(true);
+                  setShowOtpModal(true);
+                }}
+                className="text-[10px] text-accent font-bold hover:underline"
+              >
+                Login with OTP
               </button>
             </div>
 
@@ -280,8 +308,10 @@ export default function Auth({ onNavigate }) {
               <ShieldCheck className="w-6 h-6" />
             </div>
             
-            <h3 className="text-base font-extrabold text-primary font-sans">{t('otpTitle')}</h3>
-            <p className="text-xs text-gray-400 font-semibold mt-1 px-4">{t('otpSubtitle')}</p>
+            <h4 className="text-xl font-extrabold text-primary mb-1">Verify Mobile</h4>
+            <p className="text-xs text-gray-500 font-semibold mb-6">
+              {isOtpLogin ? 'Enter demo OTP 1234 to login.' : 'Enter demo OTP 1234 to verify your number.'}
+            </p>
 
             <div className="flex justify-center gap-3 my-6">
               {otpCodes.map((data, index) => (

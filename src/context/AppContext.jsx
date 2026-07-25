@@ -107,7 +107,16 @@ export const AppProvider = ({ children }) => {
       const res = await fetch(`${API_URL}${endpoint}`, { headers: getHeaders() });
       const data = await res.json();
       if (data.success) {
-        setOrders(data.orders);
+        const mappedOrders = data.orders.map(ord => ({
+          ...ord,
+          paymentMethod: ord.payment_method || 'Cash On Delivery',
+          paymentId: ord.payment_id || ord.id,
+          date: ord.created_at,
+          total: ord.total_amount,
+          deliveryCharge: ord.delivery_charge || 0,
+          distance: ord.distance || 0
+        }));
+        setOrders(mappedOrders);
       }
     } catch (err) {
       console.error('Failed to fetch orders:', err);
@@ -148,6 +157,25 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
+  const loginWithOtp = useCallback(async (phone, otp) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/login-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.access_token);
+        setCurrentUser({ ...data.user, isAdmin: data.user.role === 'admin' });
+        return { success: true, user: data.user };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Network error. Backend might be down.' };
+    }
+  }, []);
+
   const signup = useCallback(async (name, phone, email, password) => {
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
@@ -174,13 +202,17 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   // --- PRODUCT ACTIONS (Admin) ---
-  const addProduct = useCallback(async (product) => {
+  const addProduct = useCallback(async (productPayload) => {
     if (!currentUser?.isAdmin) return;
     try {
+      const isFormData = productPayload instanceof FormData;
+      const headers = getHeaders();
+      if (isFormData) delete headers['Content-Type'];
+
       const res = await fetch(`${API_URL}/products/`, {
         method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(product)
+        headers: headers,
+        body: isFormData ? productPayload : JSON.stringify(productPayload)
       });
       if (res.ok) fetchProducts();
     } catch (err) {
@@ -188,13 +220,17 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUser, getHeaders, fetchProducts]);
 
-  const editProduct = useCallback(async (updatedProduct) => {
+  const editProduct = useCallback(async (id, productPayload) => {
     if (!currentUser?.isAdmin) return;
     try {
-      const res = await fetch(`${API_URL}/products/${updatedProduct.id}`, {
+      const isFormData = productPayload instanceof FormData;
+      const headers = getHeaders();
+      if (isFormData) delete headers['Content-Type'];
+
+      const res = await fetch(`${API_URL}/products/${id}`, {
         method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(updatedProduct)
+        headers: headers,
+        body: isFormData ? productPayload : JSON.stringify(productPayload)
       });
       if (res.ok) fetchProducts();
     } catch (err) {
@@ -304,6 +340,7 @@ export const AppProvider = ({ children }) => {
     deliveryLocation,
     orders,
     login,
+    loginWithOtp,
     signup,
     logout,
     addProduct,
@@ -323,6 +360,7 @@ export const AppProvider = ({ children }) => {
     deliveryLocation,
     orders,
     login,
+    loginWithOtp,
     signup,
     logout,
     addProduct,

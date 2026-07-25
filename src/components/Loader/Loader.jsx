@@ -1,10 +1,14 @@
 import React from 'react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export const ScreenLoader = () => {
   return (
     <div className="flex-1 flex justify-center items-center w-full h-[60vh]">
       <div className="flex flex-col items-center space-y-4">
-        <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
+        <div className="relative w-16 h-16 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
+          <img src={logoImage} alt="Velmurugan Store" className="w-8 h-8 object-contain animate-pulse" />
+        </div>
         <div className="text-primary font-medium tracking-wide">Loading...</div>
       </div>
     </div>

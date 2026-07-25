@@ -1,8 +1,22 @@
 import pymysql
 from config import Config
+from utils import hash_password
 
 def get_db_connection():
     try:
+        # First connect without database to create it if it doesn't exist
+        temp_conn = pymysql.connect(
+            host=Config.DB_HOST,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with temp_conn.cursor() as cursor:
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {Config.DB_NAME}")
+        temp_conn.commit()
+        temp_conn.close()
+
+        # Now connect to the specific database
         conn = pymysql.connect(
             host=Config.DB_HOST,
             user=Config.DB_USER,
@@ -11,6 +25,15 @@ def get_db_connection():
             cursorclass=pymysql.cursors.DictCursor
         )
         return conn
+    except pymysql.err.OperationalError as e:
+        if e.args[0] == 2003:
+            print("\n" + "="*60)
+            print("[CRITICAL ERROR]: MySQL service is not running!")
+            print("Please start your local MySQL server (XAMPP, WAMP, or Docker).")
+            print("="*60 + "\n")
+        else:
+            print(f"Database operational error: {e}")
+        return None
     except Exception as e:
         print(f"Database connection error: {e}")
         return None
@@ -46,7 +69,10 @@ def init_db():
                 name VARCHAR(255) NOT NULL,
                 name_ta VARCHAR(255),
                 image_url VARCHAR(500),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                icon VARCHAR(255),
+                status ENUM('active', 'inactive') DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                deleted_at TIMESTAMP NULL DEFAULT NULL
             )
             """)
 
@@ -55,19 +81,36 @@ def init_db():
             CREATE TABLE IF NOT EXISTS products (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 category_id INT,
+                slug VARCHAR(255) UNIQUE,
                 name VARCHAR(255) NOT NULL,
                 name_ta VARCHAR(255),
-                price DECIMAL(10,2) NOT NULL,
-                stock INT DEFAULT 0,
+                brand VARCHAR(255),
+                short_description TEXT,
+                short_description_ta TEXT,
                 description TEXT,
                 description_ta TEXT,
+                mrp DECIMAL(10,2),
+                selling_price DECIMAL(10,2) NOT NULL,
+                discount_percent INT DEFAULT 0,
+                stock INT DEFAULT 0,
+                sku VARCHAR(100),
+                weight VARCHAR(50),
+                dimensions VARCHAR(100),
+                thumbnail VARCHAR(500),
                 images JSON,
+                featured BOOLEAN DEFAULT FALSE,
+                trending BOOLEAN DEFAULT FALSE,
+                best_seller BOOLEAN DEFAULT FALSE,
+                active BOOLEAN DEFAULT TRUE,
+                tags JSON,
                 rating DECIMAL(2,1) DEFAULT 0.0,
                 rating_count INT DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                deleted_at TIMESTAMP NULL DEFAULT NULL,
                 FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
-                INDEX(name)
+                INDEX(name),
+                INDEX(slug)
             )
             """)
 
@@ -173,6 +216,16 @@ def init_db():
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
             """)
+
+            # Seed default admin user
+            cursor.execute("SELECT id FROM users WHERE email = %s OR phone = %s", ('guna123@gmail.com', '6381761104'))
+            if not cursor.fetchone():
+                admin_pw = hash_password('guna123')
+                cursor.execute("""
+                    INSERT INTO users (name, email, phone, password_hash, role)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, ('Guna', 'guna123@gmail.com', '6381761104', admin_pw, 'admin'))
+                print("Default admin user 'Guna' created successfully.")
 
         conn.commit()
     except Exception as e:

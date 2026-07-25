@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CONTACT_INFO } from '@/constants/infoPages';
-import { Store, MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function Footer({ onNavigate }) {
   const { t, language } = useLanguage();
@@ -19,7 +20,9 @@ export default function Footer({ onNavigate }) {
               className="flex items-center space-x-2 cursor-pointer"
               onClick={() => onNavigate('home')}
             >
-              <Store className="w-8 h-8 text-accent" />
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md overflow-hidden shrink-0">
+                <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
+              </div>
               <div>
                 <h1 className="text-xl font-extrabold tracking-wide text-white">
                   {t('brandName')}

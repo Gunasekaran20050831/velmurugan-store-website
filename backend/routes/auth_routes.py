@@ -17,7 +17,7 @@ def register():
 
     conn = get_db_connection()
     if not conn:
-        return jsonify({'success': False, 'message': 'Database error'}), 500
+        return jsonify({'success': False, 'message': 'MySQL service is not running. Please start your local MySQL server (XAMPP/Docker).'}), 503
 
     try:
         with conn.cursor() as cursor:
@@ -71,7 +71,7 @@ def login():
 
     conn = get_db_connection()
     if not conn:
-        return jsonify({'success': False, 'message': 'Database error'}), 500
+        return jsonify({'success': False, 'message': 'MySQL service is not running. Please start your local MySQL server (XAMPP/Docker).'}), 503
 
     try:
         with conn.cursor() as cursor:
@@ -84,6 +84,55 @@ def login():
 
             if not user or not check_password(password, user['password_hash']):
                 return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+            access_token, refresh_token = generate_tokens(user['id'], user['role'])
+
+            return jsonify({
+                'success': True,
+                'message': 'Login successful',
+                'user': {
+                    'id': user['id'],
+                    'name': user['name'],
+                    'email': user['email'],
+                    'phone': user['phone'],
+                    'role': user['role']
+                },
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+
+@auth_bp.route('/login-otp', methods=['POST'])
+def login_otp():
+    data = request.json
+    phone = data.get('phone')
+    otp = data.get('otp')
+
+    if not phone or not otp:
+        return jsonify({'success': False, 'message': 'Missing phone or OTP'}), 400
+
+    # Development mode demo OTP
+    if otp != '1234':
+        return jsonify({'success': False, 'message': 'Invalid OTP. Use 1234 for demo.'}), 401
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'MySQL service is not running. Please start your local MySQL server (XAMPP/Docker).'}), 503
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, name, email, phone, role FROM users WHERE phone = %s",
+                (phone,)
+            )
+            user = cursor.fetchone()
+
+            if not user:
+                return jsonify({'success': False, 'message': 'User not found with this mobile number.'}), 404
 
             access_token, refresh_token = generate_tokens(user['id'], user['role'])
 

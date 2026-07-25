@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
-import muruganImg from '@/assets/images/murugan.png';
+import muruganFullImg from '@/assets/images/murugan_splash.jpg';
+import logoImg from '@/assets/images/velmurugan_logo.jpg';
 
 export default function SplashScreen({ onComplete }) {
-  const { t } = useLanguage();
   const [progress, setProgress] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const duration = 2800; // 2.8 seconds
+    setMounted(true);
+    const duration = 3000; // exactly 3 seconds
     const intervalTime = 30;
     const step = 100 / (duration / intervalTime);
 
@@ -15,7 +16,7 @@ export default function SplashScreen({ onComplete }) {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(onComplete, 300);
+          setTimeout(onComplete, 100);
           return 100;
         }
         return prev + step;
@@ -26,59 +27,50 @@ export default function SplashScreen({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-luxury-light flex flex-col items-center justify-between py-12 px-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-black flex flex-col justify-end">
       
-      {/* Top Background Ornaments */}
-      <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+      {/* Background Image with Cinematic Ken Burns Effect */}
+      <img 
+        src={muruganFullImg} 
+        alt="Lord Murugan Full Screen" 
+        className="absolute inset-0 w-full h-full object-cover origin-center transition-transform ease-out"
+        style={{
+          transform: mounted ? 'scale(1.15)' : 'scale(1)',
+          transitionDuration: '3s'
+        }}
+      />
 
-      <div className="flex-1 flex flex-col items-center justify-center max-w-sm w-full">
-        {/* Lord Murugan Artwork Wrapper with Gold Halo Glow */}
-        <div className="relative mb-8 group">
-          {/* Pulsing Gold Halo Ring */}
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-accent via-accent-light to-accent-dark opacity-35 blur-md animate-pulse"></div>
-          {/* Inner border */}
-          <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden border-3 border-accent/70 shadow-2xl bg-white flex items-center justify-center">
-            <img 
-              src={muruganImg} 
-              alt="Lord Murugan Artwork" 
-              className="w-full h-full object-cover scale-102 hover:scale-105 transition-transform duration-1000"
-            />
-          </div>
+      {/* Subtle Gradient Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+      {/* Content Wrapper */}
+      <div className="relative z-10 w-full flex flex-col items-center pb-12 px-6 animate-in fade-in duration-1000">
+        
+        {/* Official Velmurugan Store Logo */}
+        <div className="w-16 h-16 rounded-2xl bg-white shadow-2xl flex items-center justify-center p-1.5 mb-5 overflow-hidden border border-accent/20">
+          <img src={logoImg} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
         </div>
 
-        {/* Brand Text */}
-        <div className="text-center space-y-2 animate-in fade-in slide-in-from-bottom-5 duration-700">
-          <h1 className="text-3xl font-extrabold tracking-tight text-primary leading-none font-sans">
-            VELMURUGAN
+        {/* Brand Text & Tagline */}
+        <div className="text-center space-y-1.5 mb-10">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-none font-sans drop-shadow-lg">
+            VELMURUGAN STORE
           </h1>
-          <h2 className="text-xl font-bold tracking-widest text-accent font-sans">
-            — STORE —
-          </h2>
-          <p className="text-xs font-bold text-gray-500 tracking-wider uppercase pt-1">
-            " {t('tagline')} "
+          <p className="text-sm font-bold text-accent tracking-widest uppercase drop-shadow-md">
+            " Shop. Deliver. Smile. "
           </p>
         </div>
-      </div>
 
-      {/* Progress Bar & Loader */}
-      <div className="w-full max-w-[200px] flex flex-col items-center">
-        {/* Bar */}
-        <div className="w-full h-1 bg-primary/10 rounded-full overflow-hidden">
+        {/* Premium Animated Loading Bar */}
+        <div className="w-full max-w-[240px] h-1.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-md shadow-inner">
           <div 
-            className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-30 ease-out rounded-full"
+            className="h-full bg-gradient-to-r from-accent to-yellow-300 transition-all duration-75 ease-out rounded-full shadow-[0_0_12px_rgba(212,175,55,0.8)]"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
         
-        {/* Quick Bypass Button */}
-        <button 
-          onClick={onComplete}
-          className="text-[9px] font-bold text-primary/40 hover:text-primary tracking-widest uppercase mt-4 transition-colors duration-200"
-        >
-          Skip Intro
-        </button>
       </div>
-
+      
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ABOUT_CONTENT } from '@/constants/infoPages';
-import { Store, ShieldCheck, Heart } from 'lucide-react';
+import { Store, ShieldCheck } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function About() {
   const { language } = useLanguage();
@@ -31,8 +32,10 @@ export default function About() {
       </div>
 
       {/* Decorative Brand Element */}
-      <div className="mt-16 text-center flex flex-col items-center justify-center space-y-3 opacity-50">
-        <Heart className="w-8 h-8 text-red-500 fill-current" />
+      <div className="mt-16 text-center flex flex-col items-center justify-center space-y-3 opacity-80">
+        <div className="w-16 h-16 rounded-xl bg-white shadow-md flex items-center justify-center overflow-hidden border border-gray-100 p-1">
+          <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
+        </div>
         <p className="text-sm font-bold text-muted uppercase tracking-widest">
           {language === 'en' ? 'Serving Since 1995' : '1995 முதல் சேவையில்'}
         </p>

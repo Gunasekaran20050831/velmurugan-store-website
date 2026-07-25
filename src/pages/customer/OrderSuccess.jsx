@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import muruganImg from '@/assets/images/murugan.png';
+import muruganImg from '@/assets/images/velmurugan_logo.jpg';
 import confetti from 'canvas-confetti';
 
 export default function OrderSuccess({ order, onNavigate }) {
@@ -47,7 +47,7 @@ export default function OrderSuccess({ order, onNavigate }) {
           <img 
             src={muruganImg} 
             alt="Lord Murugan Success Artwork" 
-            className="w-full h-full object-cover scale-102"
+            className="w-full h-full object-contain p-2"
           />
         </div>
       </div>

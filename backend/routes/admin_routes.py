@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from database import get_db_connection
-from utils import admin_required
+from utils import token_required, admin_required
 import datetime
 from decimal import Decimal
 
@@ -28,6 +28,7 @@ def convert_types(obj):
 
 
 @admin_bp.route('/dashboard-stats', methods=['GET'])
+@token_required
 @admin_required
 def get_dashboard_stats(current_user):
     conn = get_db_connection()
@@ -36,30 +37,30 @@ def get_dashboard_stats(current_user):
         # Today's Revenue & Orders
         today = datetime.date.today()
         cursor.execute("SELECT COUNT(id) as today_orders, SUM(total_amount) as today_revenue FROM Orders WHERE DATE(created_at) = %s", (today,))
-        today_stats = cursor.fetchone()
+        today_stats = cursor.fetchone() or {'today_orders': 0, 'today_revenue': 0}
 
         # Total Customers
         cursor.execute("SELECT COUNT(id) as total_customers FROM Users WHERE role = 'customer'")
-        total_customers = cursor.fetchone()[0]
+        total_customers = (cursor.fetchone() or {}).get('total_customers', 0)
 
         # Total Products
         cursor.execute("SELECT COUNT(id) as total_products FROM Products")
-        total_products = cursor.fetchone()[0]
+        total_products = (cursor.fetchone() or {}).get('total_products', 0)
 
         # Order Statuses
         cursor.execute("SELECT status, COUNT(id) as count FROM Orders GROUP BY status")
         statuses = cursor.fetchall()
         
-        pending_orders = sum([row[1] for row in statuses if row[0] == 'Pending'])
-        completed_orders = sum([row[1] for row in statuses if row[0] == 'Delivered'])
+        pending_orders = sum([row['count'] for row in statuses if row['status'] == 'Pending'])
+        completed_orders = sum([row['count'] for row in statuses if row['status'] == 'Delivered'])
 
         # AOV (Average Order Value)
         cursor.execute("SELECT AVG(total_amount) as aov FROM Orders WHERE status != 'Cancelled'")
-        aov = cursor.fetchone()[0]
+        aov = (cursor.fetchone() or {}).get('aov', 0)
 
         return jsonify({
-            'today_orders': today_stats[0] or 0,
-            'today_revenue': float(today_stats[1] or 0),
+            'today_orders': today_stats.get('today_orders') or 0,
+            'today_revenue': float(today_stats.get('today_revenue') or 0),
             'total_customers': total_customers,
             'total_products': total_products,
             'pending_orders': pending_orders,
@@ -118,11 +119,11 @@ def get_distribution_analytics(current_user):
     try:
         # Payment Method Distribution
         cursor.execute("SELECT payment_method, COUNT(id) as count FROM Orders GROUP BY payment_method")
-        payment_distribution = dict_fetch_all(cursor)
+        payment_distribution = cursor.fetchall()
 
         # Delivery Type Distribution
         cursor.execute("SELECT delivery_type, COUNT(id) as count FROM Orders GROUP BY delivery_type")
-        delivery_distribution = dict_fetch_all(cursor)
+        delivery_distribution = cursor.fetchall()
 
         return jsonify({
             'payments': payment_distribution,
@@ -131,6 +132,32 @@ def get_distribution_analytics(current_user):
     except Exception as e:
         print(f"Error fetching distribution data: {e}")
         return jsonify({'message': 'Server error fetching distribution data'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@admin_bp.route('/customers', methods=['GET'])
+@token_required
+@admin_required
+def get_customers(current_user):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        query = """
+            SELECT u.id, u.name, u.email, u.phone, u.created_at, u.avatar_url,
+                   COUNT(o.id) as orders_count,
+                   SUM(o.total_amount) as total_spending
+            FROM users u
+            LEFT JOIN orders o ON u.id = o.user_id AND o.status != 'Cancelled'
+            WHERE u.role = 'customer'
+            GROUP BY u.id
+            ORDER BY u.created_at DESC
+        """
+        cursor.execute(query)
+        customers = cursor.fetchall()
+        return jsonify({'success': True, 'customers': convert_types(customers)}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         cursor.close()
         conn.close()

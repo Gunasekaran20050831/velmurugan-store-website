@@ -3,6 +3,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useApp } from '@/context/AppContext';
 import { Search, MapPin, Globe, Heart, ShoppingCart, User, ChevronDown, Check, Bell, Mic } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function Header({ onNavigate, currentPage }) {
   const { language, setLanguage, t } = useLanguage();
@@ -88,19 +89,8 @@ export default function Header({ onNavigate, currentPage }) {
               onClick={() => onNavigate('home')}
             >
               {/* Golden Shield Crest SVG */}
-              <div className="relative w-11 h-11 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark shadow-md border border-accent/30">
-                <svg className="w-8 h-8 text-accent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Outer Shield shield outline */}
-                  <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  {/* Stylized Lotus Base */}
-                  <path d="M12 18.5C14.5 18.5 16 16.5 16 14.5C16 13.5 15.5 12.5 14.5 12C14.5 12.5 14 13.5 13.5 13.8C13 14.1 12.5 14.2 12 14.2C11.5 14.2 11 14.1 10.5 13.8C10 13.5 9.5 12.5 9.5 12C8.5 12.5 8 13.5 8 14.5C8 16.5 9.5 18.5 12 18.5Z" fill="currentColor"/>
-                  {/* V symbol peacock feather stylized */}
-                  <path d="M12 5.5L16 10.5H13.8L12 7.8L10.2 10.5H8L12 5.5Z" fill="currentColor"/>
-                  {/* Top Peacock Crown Feathers */}
-                  <circle cx="12" cy="4" r="1.2" fill="currentColor"/>
-                  <circle cx="9.5" cy="4.8" r="0.9" fill="currentColor"/>
-                  <circle cx="14.5" cy="4.8" r="0.9" fill="currentColor"/>
-                </svg>
+              <div className="relative w-11 h-11 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark shadow-md border border-accent/30 overflow-hidden">
+                <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain bg-white" />
                 {/* Glow Ring */}
                 <div className="absolute inset-0 rounded-xl border border-accent/20 animate-pulse pointer-events-none"></div>
               </div>

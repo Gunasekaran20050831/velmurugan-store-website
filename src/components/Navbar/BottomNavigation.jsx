@@ -1,14 +1,15 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
-import { Home, Grid, ClipboardList, Heart, User } from 'lucide-react';
+import { Grid, ClipboardList, Heart, User } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function BottomNavigation({ onNavigate, currentPage }) {
   const { t } = useLanguage();
   const { cartItems, wishlistItems } = useCart();
 
   const navItems = [
-    { id: 'home', label: 'navHome', icon: Home },
+    { id: 'home', label: 'navHome', isLogo: true },
     { id: 'categories', label: 'navCategories', icon: Grid },
     { id: 'orders', label: 'navOrders', icon: ClipboardList },
     { id: 'wishlist', label: 'navWishlist', icon: Heart, badge: 'wishlist' },
@@ -33,7 +34,11 @@ export default function BottomNavigation({ onNavigate, currentPage }) {
             className="flex flex-col items-center justify-center py-1 relative w-16"
           >
             <div className={`p-1.5 rounded-full transition-all duration-200 ${isActive ? 'bg-primary/5 text-accent scale-110' : 'text-gray-400'}`}>
-              <Icon className="w-5.5 h-5.5" />
+              {item.isLogo ? (
+                <img src={logoImage} alt="Home" className="w-5.5 h-5.5 object-contain" />
+              ) : (
+                <Icon className="w-5.5 h-5.5" />
+              )}
             </div>
             <span className={`text-[9px] font-bold mt-0.5 tracking-wider ${isActive ? 'text-primary' : 'text-gray-400'}`}>
               {t(item.label)}

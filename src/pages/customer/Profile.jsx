@@ -2,7 +2,8 @@ import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
-import { User, MapPin, Settings, LogOut, HelpCircle, Phone, MessageCircle, Moon, Sun, Monitor } from 'lucide-react';
+import { User, MapPin, Settings, LogOut, HelpCircle, Phone, MessageCircle, Moon, Sun, Monitor, ChevronRight } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function ProfilePage({ onNavigate }) {
   const { language, setLanguage, t } = useLanguage();
@@ -22,8 +23,8 @@ export default function ProfilePage({ onNavigate }) {
   if (!currentUser) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6 animate-in fade-in duration-300">
-        <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mx-auto text-primary border border-primary/10">
-          <User className="w-6 h-6 text-accent" />
+        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm border border-gray-100 p-1.5 overflow-hidden">
+          <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
         </div>
         <div className="space-y-2">
           <h3 className="text-lg font-extrabold text-primary font-sans">Account Profile</h3>

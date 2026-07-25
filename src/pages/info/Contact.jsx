@@ -2,13 +2,17 @@ import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { CONTACT_INFO } from '@/constants/infoPages';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import logoImage from '@/assets/images/velmurugan_logo.jpg';
 
 export default function Contact() {
   const { language } = useLanguage();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 animate-in fade-in duration-300">
-      <div className="text-center space-y-4 mb-12">
+      <div className="text-center space-y-4 mb-12 flex flex-col items-center">
+        <div className="w-16 h-16 rounded-xl bg-white shadow-md flex items-center justify-center overflow-hidden border border-gray-100 p-1 mb-2">
+          <img src={logoImage} alt="Velmurugan Store Logo" className="w-full h-full object-contain" />
+        </div>
         <h1 className="text-3xl md:text-5xl font-black text-primary font-sans">
           {language === 'en' ? 'Contact Us' : 'தொடர்பு கொள்ள'}
         </h1>
