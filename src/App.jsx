@@ -5,6 +5,7 @@ import { useApp } from './context/AppContext';
 // Shared Components
 import Header from '@/components/Navbar/Navbar';
 import BottomNavigation from '@/components/Navbar/BottomNavigation';
+import Footer from '@/components/Footer/Footer';
 import { ScreenLoader } from '@/components/Loader/Loader';
 
 // Lazy Loaded Pages
@@ -20,6 +21,12 @@ const OrderSuccess = lazy(() => import('@/pages/customer/OrderSuccess'));
 const OrderTracking = lazy(() => import('@/pages/customer/OrderTracking'));
 const ProfilePage = lazy(() => import('@/pages/customer/Profile'));
 const AdminPanel = lazy(() => import('@/pages/admin/Dashboard'));
+
+// Info Pages
+const About = lazy(() => import('@/pages/info/About'));
+const Contact = lazy(() => import('@/pages/info/Contact'));
+const FAQ = lazy(() => import('@/pages/info/FAQ'));
+const PolicyPage = lazy(() => import('@/pages/info/PolicyPage'));
 
 export default function App() {
   const { t } = useLanguage();
@@ -127,22 +134,22 @@ export default function App() {
         {currentPage === 'admin' && (
           <AdminPanel onNavigate={handleNavigate} />
         )}
+
+        {/* Info Pages */}
+        {currentPage === 'about' && <About />}
+        {currentPage === 'contact' && <Contact />}
+        {currentPage === 'faq' && <FAQ />}
+        {['privacy', 'terms', 'shipping', 'refunds'].includes(currentPage) && (
+          <PolicyPage policyKey={currentPage} />
+        )}
         </Suspense>
       </main>
 
-      {/* Shared Footer (Desktop Viewports only, except splash) */}
+      {/* Shared Premium Footer (Desktop Viewports only, except splash) */}
       {!isSplash && (
-        <footer className="hidden md:block py-10 bg-primary-dark text-white border-t border-primary/20 mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-            <div className="flex justify-center items-center space-x-2">
-              <span className="font-extrabold text-sm tracking-wide text-accent">{t('brandName')}</span>
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('tagline')}</span>
-            </div>
-            <p className="text-[10px] text-gray-500 font-semibold leading-relaxed">
-              &copy; {new Date().getFullYear()} Velmurugan Store. All Rights Reserved. Built with Apple-level spacing standards and premium glassmorphism layout values.
-            </p>
-          </div>
-        </footer>
+        <div className="hidden md:block">
+          <Footer onNavigate={handleNavigate} />
+        </div>
       )}
 
       {/* Bottom Nav Bar (Mobile Viewports only, except splash/minimal screens) */}
